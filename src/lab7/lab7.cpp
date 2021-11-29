@@ -80,7 +80,7 @@ void Lab7::Update(float deltaTimeSeconds)
     {
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 1, 0));
-        RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix);
+        RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix, glm::vec3(0.5f, 0.5f, 0));
     }
 
     {
@@ -88,14 +88,14 @@ void Lab7::Update(float deltaTimeSeconds)
         modelMatrix = glm::translate(modelMatrix, glm::vec3(2, 0.5f, 0));
         modelMatrix = glm::rotate(modelMatrix, RADIANS(60.0f), glm::vec3(1, 0, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f));
-        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix);
+        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, glm::vec3(0.5f, 0, 0.2f));
     }
 
     {
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(-2, 0.5f, 0));
         modelMatrix = glm::rotate(modelMatrix, RADIANS(60.0f), glm::vec3(1, 1, 0));
-        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, glm::vec3(0, 0.5, 0));
+        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, glm::vec3(0, 0.5f, 0));
     }
 
     // Render ground
@@ -103,7 +103,7 @@ void Lab7::Update(float deltaTimeSeconds)
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0, 0.01f, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.25f));
-        RenderSimpleMesh(meshes["plane"], shaders["LabShader"], modelMatrix);
+        RenderSimpleMesh(meshes["plane"], shaders["LabShader"], modelMatrix, glm::vec3(1, 0.5f, 0));
     }
 
     // Render the point light in the scene
@@ -132,11 +132,16 @@ void Lab7::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
 
     // Set shader uniforms for light & material properties
     // TODO(student): Set light position uniform
-
+    glUniform3fv(glGetUniformLocation(shader->program, "light_position"), 1, glm::value_ptr(lightPosition));
     glm::vec3 eyePosition = GetSceneCamera()->m_transform->GetWorldPosition();
     // TODO(student): Set eye position (camera position) uniform
+    glUniform3fv(glGetUniformLocation(shader->program, "eye_position"), 1, glm::value_ptr(eyePosition));
 
     // TODO(student): Set material property uniforms (shininess, kd, ks, object color)
+    glUniform1i(glGetUniformLocation(shader->program, "material_shininess"), materialShininess);
+    glUniform1f(glGetUniformLocation(shader->program, "material_kd"), materialKd);
+    glUniform1f(glGetUniformLocation(shader->program, "material_ks"), materialKs);
+    glUniform3fv(glGetUniformLocation(shader->program, "object_color"), 1, glm::value_ptr(color));
 
     // Bind model matrix
     GLint loc_model_matrix = glGetUniformLocation(shader->program, "Model");

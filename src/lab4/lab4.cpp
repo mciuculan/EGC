@@ -104,6 +104,103 @@ void Lab4::OnInputUpdate(float deltaTime, int mods)
 {
     // TODO(student): Add transformation logic
 
+    modelMatrix = glm::mat4(1);
+    if (window->KeyHold(GLFW_KEY_W))
+    {
+        translateY += deltaTime;
+
+        modelMatrix *= transform3D::Translate(translateX, translateY, translateZ);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_S))
+    {
+        translateY -= deltaTime;
+
+        modelMatrix *= transform3D::Translate(translateX, translateY, translateZ);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_D))
+    {
+        translateX += deltaTime;
+
+        modelMatrix *= transform3D::Translate(translateX, translateY, translateZ);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_A))
+    {
+        translateX -= deltaTime;
+
+        modelMatrix *= transform3D::Translate(translateX, translateY, translateZ);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_R))
+    {
+        translateZ += deltaTime;
+
+        modelMatrix *= transform3D::Translate(translateX, translateY, translateZ);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_F))
+    {
+        translateZ -= deltaTime;
+
+        modelMatrix *= transform3D::Translate(translateX, translateY, translateZ);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_1))
+    {
+        scaleX += deltaTime;
+        scaleY += deltaTime;
+        scaleZ += deltaTime;
+
+        modelMatrix *= transform3D::Scale(scaleX, scaleY, scaleZ);
+        RenderMesh(meshes["box"], shaders["Simple"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_2))
+    {
+        scaleX -= deltaTime;
+        scaleY -= deltaTime;
+        scaleZ -= deltaTime;
+
+        modelMatrix *= transform3D::Scale(scaleX, scaleY, scaleZ);
+        RenderMesh(meshes["box"], shaders["Simple"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_3))
+    {
+        angularStepOX += deltaTime;
+        modelMatrix *= transform3D::RotateOX(angularStepOX);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_4))
+    {
+        angularStepOX -= deltaTime;
+        modelMatrix *= transform3D::RotateOX(angularStepOX);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_5))
+    {
+        angularStepOY += deltaTime;
+        modelMatrix *= transform3D::RotateOX(angularStepOX);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_6))
+    {
+        angularStepOY -= deltaTime;
+        modelMatrix *= transform3D::RotateOX(angularStepOX);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_7))
+    {
+        angularStepOZ += deltaTime;
+        modelMatrix *= transform3D::RotateOX(angularStepOX);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
+    if (window->KeyHold(GLFW_KEY_8))
+    {
+        angularStepOZ -= deltaTime;
+        modelMatrix *= transform3D::RotateOX(angularStepOX);
+        RenderMesh(meshes["box"], shaders["VertexNormal"], modelMatrix);
+    }
 }
 
 

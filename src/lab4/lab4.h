@@ -29,6 +29,7 @@ namespace m1
 
      protected:
         glm::mat4 modelMatrix;
+        glm::mat4 modelMatrix2;
         float translateX, translateY, translateZ;
         float scaleX, scaleY, scaleZ;
         float angularStepOX, angularStepOY, angularStepOZ;
