@@ -34,6 +34,8 @@ namespace m1
         void OnMouseScroll(int mouseX, int mouseY, int offsetX, int offsetY) override;
         void OnWindowResize(int width, int height) override;
 
+        GLuint textureID = 0;
+        bool mixTextures;
         std::unordered_map<std::string, Texture2D *> mapTextures;
     };
 }   // namespace m1

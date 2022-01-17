@@ -13,6 +13,15 @@ using namespace m1;
  *  and the order in which they are called, see `world.cpp`.
  */
 
+ /*
+ *  EX7 :
+     In urma modificarii filtrelor din CreateRandomTexture() in metodele de
+     setare a texturilor am obsevat ca daca folosesc filtre de GL_LINEAR textura
+     de pe cubul din stanga o sa fie mai blurata, iar daca folosesc GL_NEAREST,
+     textura o sa fie mai sharp. Cel mai dominant e filtrul de la GL_TEXTURE_MAG_FILTER
+     pentru ca daca daca filtrele sunt diferite, blurul va fi dat de ce e la GL_TEXTURE_MAG_FILTER.
+ */
+
 
 Lab9::Lab9()
 {
@@ -54,7 +63,7 @@ void Lab9::Init()
     }
 
     {
-        mapTextures["random"] = CreateRandomTexture(25, 25);
+        mapTextures["random"] = CreateRandomTexture(32, 32);
     }
 
     // Load meshes
@@ -97,7 +106,10 @@ void Lab9::Init()
         vector<glm::vec2> textureCoords
         {
             // TODO(student): Complete texture coordinates for the square
-            glm::vec2(0.0f, 0.0f)
+            glm::vec2(0.f, 0.f),
+            glm::vec2(0.f, 1.f),
+            glm::vec2(1.f, 1.f),
+            glm::vec2(1.f, 0.f)
 
         };
 
@@ -114,12 +126,13 @@ void Lab9::Init()
 
     // Create a shader program for drawing face polygon with the color of the normal
     {
-        Shader *shader = new Shader("LabShader");
+        Shader* shader = new Shader("LabShader");
         shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "lab9", "shaders", "VertexShader.glsl"), GL_VERTEX_SHADER);
         shader->AddShader(PATH_JOIN(window->props.selfDir, SOURCE_PATH::M1, "lab9", "shaders", "FragmentShader.glsl"), GL_FRAGMENT_SHADER);
         shader->CreateAndLink();
         shaders[shader->GetName()] = shader;
     }
+    mixTextures = false;
 }
 
 
@@ -150,7 +163,7 @@ void Lab9::Update(float deltaTimeSeconds)
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(1, 1, -3));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(2));
-        RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix, mapTextures["earth"]);
+        RenderSimpleMesh(meshes["sphere"], shaders["LabShader"], modelMatrix, mapTextures["earth"], nullptr);
     }
 
     {
@@ -158,7 +171,7 @@ void Lab9::Update(float deltaTimeSeconds)
         modelMatrix = glm::translate(modelMatrix, glm::vec3(2, 0.5f, 0));
         modelMatrix = glm::rotate(modelMatrix, RADIANS(60.0f), glm::vec3(1, 0, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.75f));
-        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, mapTextures["crate"]);
+        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, mapTextures["crate"], nullptr);
     }
 
     {
@@ -166,21 +179,23 @@ void Lab9::Update(float deltaTimeSeconds)
         modelMatrix = glm::translate(modelMatrix, glm::vec3(-2, 0.5f, 0));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.75f));
         modelMatrix = glm::rotate(modelMatrix, RADIANS(75.0f), glm::vec3(1, 1, 0));
-        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, mapTextures["random"]);
+        mixTextures = true;
+        RenderSimpleMesh(meshes["box"], shaders["LabShader"], modelMatrix, mapTextures["random"], mapTextures["earth"]);
+        mixTextures = false;
     }
 
     {
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(0.0f, 0.5f, 0.0f));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.5f));
-        RenderSimpleMesh(meshes["square"], shaders["LabShader"], modelMatrix, mapTextures["grass"]);
+        RenderSimpleMesh(meshes["square"], shaders["LabShader"], modelMatrix, mapTextures["grass"], nullptr);
     }
 
     {
         glm::mat4 modelMatrix = glm::mat4(1);
         modelMatrix = glm::translate(modelMatrix, glm::vec3(-2, -0.5f, -3));
         modelMatrix = glm::scale(modelMatrix, glm::vec3(0.1f));
-        RenderSimpleMesh(meshes["bamboo"], shaders["LabShader"], modelMatrix, mapTextures["bamboo"]);
+        RenderSimpleMesh(meshes["bamboo"], shaders["LabShader"], modelMatrix, mapTextures["bamboo"], nullptr);
     }
 }
 
@@ -191,7 +206,7 @@ void Lab9::FrameEnd()
 }
 
 
-void Lab9::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelMatrix, Texture2D* texture1, Texture2D* texture2)
+void Lab9::RenderSimpleMesh(Mesh* mesh, Shader* shader, const glm::mat4& modelMatrix, Texture2D* texture1, Texture2D* texture2)
 {
     if (!mesh || !shader || !shader->GetProgramID())
         return;
@@ -214,22 +229,32 @@ void Lab9::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
     glUniformMatrix4fv(loc_projection_matrix, 1, GL_FALSE, glm::value_ptr(projectionMatrix));
 
     // TODO(student): Set any other shader uniforms that you need
+    glUniform1i(glGetUniformLocation(shader->program, "mix_textures"), mixTextures);
 
     if (texture1)
     {
         // TODO(student): Do these:
         // - activate texture location 0
-        // - bind the texture1 ID
-        // - send theuniform value
+        glActiveTexture(GL_TEXTURE0);
 
+        // - bind the texture1 ID
+        glBindTexture(GL_TEXTURE_2D, texture1->GetTextureID());
+
+        // - send theuniform value
+        glUniform1i(glGetUniformLocation(shader->program, "texture_1"), 0);
     }
 
     if (texture2)
     {
         // TODO(student): Do these:
         // - activate texture location 1
+        glActiveTexture(GL_TEXTURE1);
+
         // - bind the texture2 ID
+        glBindTexture(GL_TEXTURE_2D, texture2->GetTextureID());
+
         // - send the uniform value
+        glUniform1i(glGetUniformLocation(shader->program, "texture_2"), 1);
 
     }
 
@@ -241,19 +266,26 @@ void Lab9::RenderSimpleMesh(Mesh *mesh, Shader *shader, const glm::mat4 & modelM
 
 Texture2D* Lab9::CreateRandomTexture(unsigned int width, unsigned int height)
 {
-    GLuint textureID = 0;
     unsigned int channels = 3;
     unsigned int size = width * height * channels;
     unsigned char* data = new unsigned char[size];
 
     // TODO(student): Generate random texture data
-
+    for (int i = 0; i < size; i++) {
+        data[i] = rand() % (UCHAR_MAX + 1);
+    }
     // TODO(student): Generate and bind the new texture ID
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
 
     if (GLEW_EXT_texture_filter_anisotropic) {
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, 4);
     }
     // TODO(student): Set the texture parameters (MIN_FILTER, MAG_FILTER and WRAPPING MODE) using glTexParameteri
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
     CheckOpenGLError();
@@ -262,7 +294,7 @@ Texture2D* Lab9::CreateRandomTexture(unsigned int width, unsigned int height)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
 
     // TODO(student): Generate texture mip-maps
-
+    glGenerateMipmap(GL_TEXTURE_2D);
     CheckOpenGLError();
 
     // Save the texture into a wrapper Texture2D class for using easier later during rendering phase

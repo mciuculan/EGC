@@ -37,6 +37,7 @@ namespace m1
         float materialKs;
 
         // TODO(student): If you need any other class variables, define them here.
-
+        int light;
+        float cutoff;
     };
 }   // namespace m1
